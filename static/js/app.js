@@ -14,21 +14,21 @@ function buildMetadata (sample) {
 function buildChart (sample) {
     d3.json('samples.json').then((data)=> {
        
-        var sample = data.samples;
-        var resultArray= sample.filter(sampleObject => sampleObject.id==sample);
+        var dataSample = data.samples;
+        var resultArray= dataSample.filter(sampleObject => sampleObject.id==sample);
         var result=resultArray[0];
         var otuIds = result.otu_ids;
         var otuLables = result.otu_lables;
         var sampleValues = result.sample_values;
 
         var bubbleData = [{
-            x: otuLables, 
+            x: otuIds, 
             y: sampleValues,
             mode: 'markers', 
             type: 'scatter',
             text: otuLables,
             marker: {
-                color: otuLables,
+                color: sampleValues,
                 size: sampleValues,
                 colorscale: 'Earth'
             }
@@ -50,7 +50,7 @@ function buildChart (sample) {
         var barData = [{
             y: yticks,
             x: sampleValues.slice(0,10).reverse(),
-            text:otuLables.slice(0,10).reverse(),
+            // text:otuLables.slice(0,10).reverse(),
             type: 'bar',
             orientation: 'h'
         }];
@@ -66,26 +66,34 @@ function buildChart (sample) {
 
 
 
-function init () {
-    var selector = d3.select('#selDataset');
-    d3.json('samples.json').then((data)=> {
-        var sampleNames = data.names;
-        sampleNames.forEach((sample)=>{
-            selector.append('option')
-            .text(sample)
-            .property('value', sample);            
-        });
-        var firstSample = sampleNames[0];
-        buildChart(firstSample);
-        buildMetadata(firstSample);
+function init() {
+  // Grab a reference to the dropdown select element
+  var selector = d3.select("#selDataset");
 
-});
+  // Use the list of sample names to populate the select options
+  d3.json("samples.json").then((data) => {
+    var sampleNames = data.names;
+
+    sampleNames.forEach((sample) => {
+      selector
+        .append("option")
+        .text(sample)
+        .property("value", sample);
+    });
+
+    // Use the first sample from the list to build the initial plots
+    var firstSample = sampleNames[0];
+    buildChart(firstSample);
+    buildMetadata(firstSample);
+  });
 }
 
-function optionChanged (newSample) {
-    buildChart(newSample);
-    buildMetadata(newSample);
-
+function optionChanged(newSample) {
+  // Fetch new data each time a new sample is selected
+  buildChart(newSample);
+  buildMetadata(newSample);
 }
+
+// Initialize the dashboard
 init();
 
